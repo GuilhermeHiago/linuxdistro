@@ -26,6 +26,8 @@ class GetCpuLoad(object):
         '''
         self.percentage = percentage
         self.cpustat = '/proc/stat'
+        self.cpuinfo = '/proc/cpuinfo'
+        self.meminfo = '/proc/meminfo'
         self.sep = ' ' 
         self.sleeptime = sleeptime
 
@@ -71,6 +73,20 @@ class GetCpuLoad(object):
                 #update dictionionary
                 cpu_infos.update({cpu_id:{'total':Total,'idle':Idle}})
             return cpu_infos
+
+    def getcpuinfo(self):
+        cpu_infos = {} #collect here the information
+        with open(self.cpuinfo,'r') as f_info:
+            content = f_info.readlines()
+            return content[4]
+
+    def getraminfo(self):
+        with open(self.meminfo,'r') as f_meminfo:
+            content = f_meminfo.readlines()
+            memTotal = int(content[0][17:-4])
+            memFree = int(content[1][16:-4])
+
+            return (memTotal / 1000,(memTotal - memFree) / 1000) 
 
     def getcpuload(self):
         '''

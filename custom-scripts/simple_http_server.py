@@ -1,11 +1,10 @@
 from base64 import decode
+from calendar import prmonth
 from concurrent.futures import process
 import time
 import http.server#BaseHTTPServer
 import os, subprocess
 import cpustat
-import platform
-import psutil
 
 HOST_NAME = '0.0.0.0' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 8000
@@ -24,18 +23,30 @@ def get_running_process():
 
     o, e = proc.communicate()
 
-
+    o = o.decode('ascii').split()
     resp = []
     aux = ""
 
-    for i in o.decode():
-        if i.lower() in ["root", "command"]:
-            resp += [aux]
+    for i in o:
+        
+        if i.lower() == "command":
+            resp += [aux + " " + i]
             aux = ""
-
-        aux += i
+        elif i.lower() in ["root", os.getlogin()]:
+            resp += [aux]
+            aux = i
+        else:
+            aux += " " + i
 
     return resp
+
+def get_process_name(id):
+    p = subprocess.Popen(["ps -o cmd= {}".format(id)], stdout=subprocess.PIPE, shell=True)
+    return str(p.communicate()[0])
+
+def getprocesses():
+        pids = [int(x) for x in os.listdir('/proc') if x.isdigit()]
+        return pids
 
 class MyHandler(http.server.BaseHTTPRequestHandler):
     def do_HEAD(s):
@@ -43,6 +54,7 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         s.send_header("Content-type", "text/html")
         s.end_headers()
     def do_GET(s):
+
         """Respond to a GET request."""
         s.send_response(200)
         s.send_header("Content-type", "text/html")
@@ -53,9 +65,16 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
         datahora = os.popen('date').read()
         s.wfile.write(bytes("<p>Data e Hora: %s</p>" % datahora, 'utf-8'))
         s.wfile.write(bytes("<p>CPU uptime: %s in seconds</p>" % uptime2(), 'utf-8'))
-        s.wfile.write(bytes("<p>CPU frequency: %s</p>" % str(psutil.cpu_freq()), 'utf-8'))
-        s.wfile.write(bytes("<p>CPU model: %s</p>" % platform.processor(), 'utf-8'))
+        s.wfile.write(bytes("<p>CPU %s</p>" % cpuinfo.getcpuinfo(), 'utf-8'))
+        #s.wfile.write(bytes("<p>CPU frequency: %s</p>" % str(psutil.cpu_freq()), 'utf-8'))
+        s.wfile.write(bytes("<p>CPU usage: %s</p>" % str(cpuinfo.getcpuload()), 'utf-8'))
         s.wfile.write(bytes("<p>CPU: %s</p>" % cpuinfo.getcputime(), 'utf-8'))
+
+        aux = cpuinfo.getraminfo()
+        s.wfile.write(bytes("<p>Ram total: %s</p>" % aux[0], 'utf-8'))
+
+        s.wfile.write(bytes("<p>Ram available: %s</p>" % aux[1], 'utf-8'))
+
         s.wfile.write(bytes("<p>Running Process: </p>", 'utf-8'))
 
         process_list = get_running_process()
@@ -64,7 +83,6 @@ class MyHandler(http.server.BaseHTTPRequestHandler):
 
         for i in process_list:
             s.wfile.write(bytes("<p>%s</p>" % i, 'utf-8'))
-
 
         # If someone went to "http://something.somewhere.net/foo/bar/",
         # then s.path equals "/foo/bar/".
