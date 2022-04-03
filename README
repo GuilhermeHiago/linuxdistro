@@ -1,18 +1,18 @@
-#T1 - Construção e suporte de distribuições Linux
+# T1 - Construção e suporte de distribuições Linux
 Laboratório Sistemas Operacionais
 
 
-##1.Objetivo
+## 1.Objetivo
 
 Este tutorial tem como objetivo  a geração de uma distribuição Linux que possua um servidor WEB python e escrever uma página html simples, além de que esta distribuição, na máquina target, deve poder ser acessada pela máquina host.
 
-##2.Pré-requisitos
+## 2.Pré-requisitos
 
 Para este tutorial é considerado que você já tenha realizado os tutoriais 1.1, 1.2 e 1.3 (compilação de sistema operacional com Buildroot, emulação com QEMU, configuração de rede com QEMU), vistos em aula.
 Após seguir os passos dos tutoriais 1.1, 1.2 e 1.3, vistos em aula, é necessário adicionar suporte a linguagem python. Para isso seguem os comando:
 
 
-##3.Adicionando Python
+## 3.Adicionando Python
 
 Para adicionar suporte ao Python é necessário adicionar a variável WCHAR ao tool chain do sistema, para isso, no diretório “/buildroot” rode os comandos:
 
